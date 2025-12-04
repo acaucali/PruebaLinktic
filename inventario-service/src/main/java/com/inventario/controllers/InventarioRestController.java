@@ -67,22 +67,28 @@ public class InventarioRestController {
 	@GetMapping("/inventario/consulta/{id}")
 	public ResponseEntity<?> consultaCantidadProducto(@PathVariable Long id) {
 		
-		Inventario inventario=null;
-		Map<String, Object> response = new HashMap<>();
+Inventario inventarioActual= inventarioService.findByProductoId(id);
 		
-		try { 
-			inventario= inventarioService.findById(id);
+		Map<String, Object> response = new HashMap<>();
+		Integer cantidad = 0;
+		
+		if(inventarioActual == null) {
+			  response.put("mensaje", "Error, no se pudo actualizar el inventario, el producto ID: ".concat(id.toString().concat(" no existe en la base de datos!"))); 	
+			  return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+		
+		try{
+			
+			cantidad =inventarioActual.getCantidad();
+			
+		
 		}catch(DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos!");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		
-		if(inventario == null) {
-		  response.put("mensaje", "El Inventario ID: ".concat(id.toString().concat(" no existe en la base de datos!"))); 	
-		  return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
+		response.put("mensaje", "El producto Id: ".concat(id.toString().concat("tiene: ").concat(cantidad.toString()).concat("disponible")));
 		return new ResponseEntity<Map<String, Object>> (response,HttpStatus.OK);		
 	}
 	
