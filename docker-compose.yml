@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  inventario-service:
+    build:
+      context: ./inventario-service
+      dockerfile: Dockerfile
+    container_name: inventario-service
+    ports:
+      - "8090:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/data/inventario.db
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.sqlite.JDBC
+      - SPRING_JPA_DATABASE_PLATFORM=com.inventario.service.SQLiteDialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    volumes:
+      - inventario_data:/data
+    networks:
+      - micro_net
+
+  producto-service:
+    build:
+      context: ./producto-service
+      dockerfile: Dockerfile
+    container_name: producto-service
+    ports:
+      - "9090:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/data/producto.db
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.sqlite.JDBC
+      - SPRING_JPA_DATABASE_PLATFORM=com.producto.service.SQLiteDialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - INVENTARIO_SERVICE_URL=http://inventario-service:8080/api/servicios/inventario
+    depends_on:
+      - inventario-service
+    volumes:
+      - producto_data:/data
+    networks:
+      - micro_net
+
+volumes:
+  inventario_data:
+  producto_data:
+
+networks:
+  micro_net:
